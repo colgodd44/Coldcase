@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLD CASE — CLASSIFIED</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@300;400;700&display=swap');
+
+  :root {
+    --paper: #e8dfc8;
+    --paper-dark: #d4c9a8;
+    --ink: #1a1208;
+    --ink-faded: #4a3f2a;
+    --red: #8b1a1a;
+    --red-stamp: #a01515;
+    --green-stamp: #1a5c1a;
+    --khaki: #b8a878;
+    --shadow: rgba(0,0,0,0.4);
+    --folder: #c8a84a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1410;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px);
+    font-family: 'Courier Prime', monospace;
+    min-height: 100vh;
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── DESK SURFACE ── */
+  #desk {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+    position: relative;
+  }
+
+  /* ── HEADER ── */
+  .desk-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .agency-seal {
+    display: inline-block;
+    border: 3px double var(--khaki);
+    padding: 10px 30px;
+    position: relative;
+    background: rgba(200,168,74,0.08);
+  }
+  .agency-seal::before, .agency-seal::after {
+    content: '◆';
+    position: absolute;
+    color: var(--khaki);
+    font-size: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .agency-seal::before { left: 8px; }
+  .agency-seal::after { right: 8px; }
+  .agency-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--khaki);
+    text-transform: uppercase;
+  }
+  .agency-sub {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    color: rgba(200,168,74,0.5);
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  /* ── NEW CASE BUTTON ── */
+  #api-key-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 0 auto 16px;
+    max-width: 500px;
+  }
+  #api-key-input {
+    flex: 1;
+    background: rgba(200,168,74,0.08);
+    border: 1px solid var(--khaki);
+    color: var(--khaki);
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    padding: 8px 12px;
+    outline: none;
+    letter-spacing: 1px;
+  }
+  #api-key-input::placeholder { color: rgba(184,168,120,0.4); }
+  #api-key-save {
+    background: none;
+    border: 1px solid var(--khaki);
+    color: var(--khaki);
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 8px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  #api-key-save:hover { background: var(--khaki); color: #1a1410; }
+  #api-key-status {
+    text-align: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    height: 14px;
+  }
+
+  #new-case-btn {
+    display: block;
+    margin: 0 auto 30px;
+    background: none;
+    border: 2px solid var(--khaki);
+    color: var(--khaki);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    padding: 10px 30px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    position: relative;
+  }
+  #new-case-btn:hover {
+    background: var(--khaki);
+    color: #1a1410;
+  }
+  #new-case-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── LOADING ── */
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: var(--khaki);
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 3px;
+    font-size: 12px;
+  }
+  .loading-dots::after {
+    content: '';
+    animation: dots 1.5s infinite;
+  }
+  @keyframes dots {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+  }
+
+  /* ── DOSSIER ── */
+  #dossier {
+    display: none;
+    animation: slideIn 0.5s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── FOLDER TAB ── */
+  .folder-tabs {
+    display: flex;
+    gap: 3px;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 2;
+  }
+  .folder-tab {
+    background: var(--paper-dark);
+    border: 1px solid #8a7a58;
+    border-bottom: none;
+    padding: 6px 16px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--ink-faded);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .folder-tab.active {
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  /* ── PAPER ── */
+  .paper {
+    background: var(--paper);
+    background-image: 
+      repeating-linear-gradient(transparent, transparent 27px, rgba(180,160,120,0.3) 27px, rgba(180,160,120,0.3) 28px);
+    border: 1px solid #8a7a58;
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.5), inset 0 0 60px rgba(180,160,120,0.2);
+    padding: 30px;
+    position: relative;
+    min-height: 400px;
+  }
+  .paper::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── CASE HEADER ── */
+  .case-header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .case-number {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--ink-faded);
+  }
+  .case-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1.2;
+    max-width: 500px;
+  }
+  .case-meta {
+    font-size: 10px;
+    color: var(--ink-faded);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── STAMPS ── */
+  .stamp-classified {
+    display: inline-block;
+    border: 3px solid var(--red-stamp);
+    color: var(--red-stamp);
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 6px;
+    padding: 4px 12px;
+    transform: rotate(-8deg);
+    opacity: 0.85;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+  .stamp-cold {
+    display: inline-block;
+    border: 3px solid #1a4a8a;
+    color: #1a4a8a;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 4px;
+    padding: 3px 10px;
+    transform: rotate(5deg);
+    opacity: 0.75;
+    text-transform: uppercase;
+    margin-left: 10px;
+  }
+
+  /* ── FIELD ROW ── */
+  .field-row {
+    display: flex;
+    gap: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(74,63,42,0.2);
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .field-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+    min-width: 120px;
+    padding-top: 2px;
+  }
+  .field-value {
+    font-family: 'Special Elite', cursive;
+    font-size: 14px;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  /* ── NARRATIVE ── */
+  .narrative {
+    font-family: 'Special Elite', cursive;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--ink);
+    margin: 16px 0;
+  }
+
+  /* ── EVIDENCE ITEMS ── */
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .evidence-item {
+    background: rgba(180,160,120,0.15);
+    border: 1px solid rgba(74,63,42,0.3);
+    border-left: 3px solid var(--ink);
+    padding: 10px 12px;
+    position: relative;
+  }
+  .evidence-tag {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .evidence-desc {
+    font-family: 'Special Elite', cursive;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .evidence-number {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  /* ── SUSPECT CARDS ── */
+  .suspect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .suspect-card {
+    background: var(--paper-dark);
+    border: 1px solid #8a7a58;
+    padding: 14px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .suspect-card:hover {
+    border-color: var(--ink);
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  }
+  .suspect-card.selected {
+    border: 2px solid var(--red);
+    background: rgba(139,26,26,0.08);
+  }
+  .suspect-photo-area {
+    width: 60px;
+    height: 72px;
+    background: rgba(74,63,42,0.2);
+    border: 1px solid rgba(74,63,42,0.4);
+    float: left;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: var(--ink-faded);
+  }
+  .suspect-name {
+    font-family: 'Special Elite', cursive;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .suspect-role {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .suspect-detail {
+    font-size: 11px;
+    color: var(--ink-faded);
+    line-height: 1.5;
+    clear: both;
+    padding-top: 6px;
+    border-top: 1px solid rgba(74,63,42,0.2);
+    margin-top: 6px;
+  }
+  .suspect-motive {
+    margin-top: 6px;
+    padding: 4px 8px;
+    background: rgba(139,26,26,0.08);
+    border-left: 2px solid var(--red);
+    font-size: 11px;
+    color: var(--red);
+    font-style: italic;
+  }
+  .suspect-select-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--red);
+  }
+  .suspect-card.selected .suspect-select-indicator::after {
+    content: '✓';
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    margin: 20px 0 12px;
+  }
+
+  /* ── SOLVE SECTION ── */
+  #solve-section {
+    margin-top: 30px;
+    border-top: 2px dashed rgba(74,63,42,0.4);
+    padding-top: 20px;
+  }
+  .solve-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .theory-input {
+    width: 100%;
+    background: rgba(180,160,120,0.2);
+    border: 1px solid rgba(74,63,42,0.4);
+    border-radius: 0;
+    padding: 12px;
+    font-family: 'Special Elite', cursive;
+    font-size: 13px;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .theory-input:focus {
+    border-color: var(--ink);
+  }
+  .theory-input::placeholder {
+    color: var(--khaki);
+    font-style: italic;
+  }
+  .solve-btn {
+    margin-top: 10px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    padding: 10px 24px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .solve-btn:hover { background: var(--red); }
+  .solve-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── VERDICT ── */
+  #verdict-box {
+    display: none;
+    margin-top: 20px;
+    border: 2px solid var(--ink);
+    padding: 20px;
+    background: rgba(180,160,120,0.2);
+    animation: slideIn 0.4s ease;
+  }
+  .verdict-stamp {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .verdict-correct { color: var(--green-stamp); border-color: var(--green-stamp); }
+  .verdict-wrong { color: var(--red); border-color: var(--red); }
+  .verdict-text {
+    font-family: 'Special Elite', cursive;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  .verdict-box-correct { border-color: var(--green-stamp); }
+  .verdict-box-wrong { border-color: var(--red); }
+
+  /* ── REDACTION ── */
+  .redacted {
+    background: var(--ink);
+    color: transparent;
+    user-select: none;
+    display: inline-block;
+    min-width: 80px;
+  }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 20px;
+    margin: 12px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink-faded);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 14px;
+    padding-left: 16px;
+  }
+  .timeline-item::before {
+    content: '◆';
+    position: absolute;
+    left: -15px;
+    top: 2px;
+    font-size: 8px;
+    color: var(--ink);
+  }
+  .timeline-time {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+  .timeline-event {
+    font-family: 'Special Elite', cursive;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  /* ── ANNOTATIONS ── */
+  .annotation {
+    display: inline-block;
+    background: rgba(200,168,74,0.3);
+    border-bottom: 1px solid var(--folder);
+    font-style: italic;
+    padding: 0 3px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1a1410; }
+  ::-webkit-scrollbar-thumb { background: #4a3f2a; }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    .paper { padding: 18px; }
+    .case-header { flex-direction: column; }
+    .case-meta { text-align: left; }
+    .evidence-grid, .suspect-grid { grid-template-columns: 1fr; }
+    .folder-tabs { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div id="desk">
+
+  <div class="desk-header">
+    <div class="agency-seal">
+      <div class="agency-name">Division of Unsolved Investigations</div>
+      <div class="agency-sub">Cold Case Archive — Eyes Only</div>
+    </div>
+  </div>
+
+  <div id="api-key-bar">
+    <input id="api-key-input" type="password" placeholder="Paste Anthropic API key (sk-ant-...)" autocomplete="off" />
+    <button id="api-key-save" onclick="saveKey()">Authorise</button>
+  </div>
+  <div id="api-key-status"></div>
+
+  <button id="new-case-btn" onclick="generateCase()">⊕ Request New Case File</button>
+
+  <div id="loading">
+    <div>RETRIEVING CLASSIFIED RECORDS<span class="loading-dots"></span></div>
+    <div style="margin-top:8px;font-size:10px;opacity:0.5;letter-spacing:2px;">CLEARANCE LEVEL ALPHA</div>
+  </div>
+
+  <div id="dossier">
+    <div class="folder-tabs">
+      <div class="folder-tab active" onclick="switchTab('overview')">Case Overview</div>
+      <div class="folder-tab" onclick="switchTab('evidence')">Evidence</div>
+      <div class="folder-tab" onclick="switchTab('suspects')">Suspects</div>
+      <div class="folder-tab" onclick="switchTab('timeline')">Timeline</div>
+      <div class="folder-tab" onclick="switchTab('solve')">Resolve</div>
+    </div>
+
+    <div class="paper">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-content active" id="tab-overview">
+        <div style="margin-bottom:14px;">
+          <span class="stamp-classified">Classified</span>
+          <span class="stamp-cold">Cold Case</span>
+        </div>
+        <div class="case-header">
+          <div>
+            <div class="case-number" id="case-number">CASE FILE #000000</div>
+            <div class="case-title" id="case-title">Loading...</div>
+          </div>
+          <div class="case-meta" id="case-meta"></div>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Victim</span>
+          <span class="field-value" id="field-victim"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Last Known</span>
+          <span class="field-value" id="field-location"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Incident Date</span>
+          <span class="field-value" id="field-date"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Classification</span>
+          <span class="field-value" id="field-class"></span>
+        </div>
+        <div class="section-header">Case Summary</div>
+        <div class="narrative" id="case-summary"></div>
+      </div>
+
+      <!-- EVIDENCE TAB -->
+      <div class="tab-content" id="tab-evidence">
+        <div class="section-header">Physical Evidence Log</div>
+        <div class="evidence-grid" id="evidence-grid"></div>
+        <div class="section-header">Forensic Notes</div>
+        <div class="narrative" id="forensic-notes"></div>
+      </div>
+
+      <!-- SUSPECTS TAB -->
+      <div class="tab-content" id="tab-suspects">
+        <div class="section-header">Persons of Interest</div>
+        <div style="font-size:11px;color:var(--ink-faded);margin-bottom:12px;font-style:italic;">
+          Review each subject's profile and motive. Your assessment will be requested in the Resolve tab.
+        </div>
+        <div class="suspect-grid" id="suspect-grid"></div>
+      </div>
+
+      <!-- TIMELINE TAB -->
+      <div class="tab-content" id="tab-timeline">
+        <div class="section-header">Reconstructed Timeline of Events</div>
+        <div style="font-size:11px;color:var(--red);margin-bottom:14px;font-family:'Oswald',sans-serif;letter-spacing:2px;">
+          ⚠ PARTIAL — GAPS REMAIN UNVERIFIED
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <div class="section-header">Investigator Notes</div>
+        <div class="narrative" id="investigator-notes"></div>
+      </div>
+
+      <!-- SOLVE TAB -->
+      <div class="tab-content" id="tab-solve">
+        <div class="section-header">Case Resolution</div>
+        <div id="solve-section">
+          <div class="solve-label">Select Your Primary Suspect</div>
+          <div class="suspect-grid" id="solve-suspect-grid"></div>
+
+          <div style="margin-top:20px;">
+            <div class="solve-label">State Your Theory</div>
+            <textarea class="theory-input" id="theory-input" placeholder="Describe what you believe happened, how it was done, and why this suspect is responsible..."></textarea>
+          </div>
+
+          <button class="solve-btn" id="solve-btn" onclick="submitSolution()">Submit Case Theory</button>
+
+          <div id="verdict-box"></div>
+        </div>
+      </div>
+
+    </div><!-- /paper -->
+  </div><!-- /dossier -->
+
+</div><!-- /desk -->
+
+<script>
+let caseData = null;
+let selectedSuspect = null;
+let apiKey = localStorage.getItem('cold_case_key') || '';
+
+function saveKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-')) { setKeyStatus('⚠ Invalid key format', 'var(--red)'); return; }
+  apiKey = val;
+  localStorage.setItem('cold_case_key', val);
+  document.getElementById('api-key-input').value = '';
+  setKeyStatus('✓ Key authorised', 'var(--green-stamp)');
+}
+function setKeyStatus(msg, color) {
+  const el = document.getElementById('api-key-status');
+  el.textContent = msg; el.style.color = color;
+  setTimeout(() => { el.textContent = ''; }, 3000);
+}
+window.addEventListener('DOMContentLoaded', () => {
+  if (apiKey) setKeyStatus('✓ Key loaded from storage', 'var(--green-stamp)');
+});
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.folder-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = ['overview','evidence','suspects','timeline','solve'];
+  const idx = tabs.indexOf(name);
+  document.querySelectorAll('.folder-tab')[idx].classList.add('active');
+}
+
+async function generateCase() {
+  if (!apiKey) { alert('Enter your Anthropic API key first.'); return; }
+  const btn = document.getElementById('new-case-btn');
+  btn.disabled = true;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('dossier').style.display = 'none';
+  document.getElementById('verdict-box').style.display = 'none';
+  selectedSuspect = null;
+  document.getElementById('theory-input').value = '';
+
+  const prompt = `Generate a detailed fictional cold case investigation file. Return ONLY valid JSON with this exact structure:
+
+{
+  "caseNumber": "CC-XXXXXX (random 6 digits)",
+  "title": "The [adjective] [noun] Case — a dramatic case name",
+  "victim": "Full Name, age, occupation",
+  "location": "Specific place, city",
+  "date": "Month Day, Year (between 1970-2005)",
+  "classification": "Homicide / Disappearance / Suspected Homicide / etc",
+  "openedYear": "Year case was opened",
+  "leadDetective": "Detective Name",
+  "summary": "3-4 sentence dramatic narrative summary of the case. Include atmosphere and intrigue.",
+  "evidence": [
+    {"tag": "evidence category", "description": "detailed description of item", "significance": "why it matters"},
+    {"tag": "evidence category", "description": "...", "significance": "..."},
+    {"tag": "evidence category", "description": "...", "significance": "..."},
+    {"tag": "evidence category", "description": "...", "significance": "..."},
+    {"tag": "evidence category", "description": "...", "significance": "..."}
+  ],
+  "forensicNotes": "2-3 sentences of forensic observations, written in official report tone.",
+  "suspects": [
+    {
+      "name": "Full Name",
+      "role": "Relationship to victim",
+      "emoji": "single relevant emoji",
+      "alibi": "Their stated alibi",
+      "motive": "Suspected motive",
+      "notes": "1-2 sentences of investigator observations about this person"
+    },
+    {
+      "name": "Full Name",
+      "role": "Relationship to victim",
+      "emoji": "single relevant emoji",
+      "alibi": "Their stated alibi",
+      "motive": "Suspected motive",
+      "notes": "1-2 sentences of investigator observations about this person"
+    },
+    {
+      "name": "Full Name",
+      "role": "Relationship to victim",
+      "emoji": "single relevant emoji",
+      "alibi": "Their stated alibi",
+      "motive": "Suspected motive",
+      "notes": "1-2 sentences of investigator observations about this person"
+    }
+  ],
+  "timeline": [
+    {"time": "time/date label", "event": "what happened"},
+    {"time": "time/date label", "event": "what happened"},
+    {"time": "time/date label", "event": "what happened"},
+    {"time": "time/date label", "event": "what happened"},
+    {"time": "time/date label", "event": "what happened"},
+    {"time": "time/date label", "event": "what happened"}
+  ],
+  "investigatorNotes": "2-3 sentences of the lead detective's personal observations and hunches, written in first person.",
+  "solution": {
+    "culpritIndex": 0,
+    "explanation": "3-4 sentences explaining exactly what happened, who did it, how, and why. This is the true answer."
+  }
+}
+
+Make the case genuinely mysterious and compelling. Include red herrings. The solution should be satisfying but not obvious.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const rawDebug = JSON.stringify(data).slice(0, 300);
+    document.getElementById('loading').innerHTML = '<div style="color:#f88;font-size:11px;padding:10px;word-break:break-all;">RAW: ' + rawDebug + '</div>';
+    if (!data.content) { throw new Error('API error: ' + JSON.stringify(data).slice(0,200)); }
+    const text = data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    try { caseData = JSON.parse(clean); }
+    catch(pe) { console.error('JSON parse failed:', clean); throw new Error('JSON parse error: ' + pe.message); }
+    renderCase(caseData);
+
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    btn.disabled = false;
+    alert('Error: ' + e.message + '\n\nOpen browser console (F12) for details.');
+    console.error('generateCase error:', e);
+  }
+}
+
+function renderCase(c) {
+  // Overview
+  document.getElementById('case-number').textContent = 'CASE FILE ' + c.caseNumber;
+  document.getElementById('case-title').textContent = c.title;
+  document.getElementById('case-meta').innerHTML = 
+    `Opened: ${c.openedYear}<br>Lead: Det. ${c.leadDetective}<br>Status: <span style="color:var(--red);font-weight:700">UNSOLVED</span>`;
+  document.getElementById('field-victim').textContent = c.victim;
+  document.getElementById('field-location').textContent = c.location;
+  document.getElementById('field-date').textContent = c.date;
+  document.getElementById('field-class').textContent = c.classification;
+  document.getElementById('case-summary').textContent = c.summary;
+
+  // Evidence
+  const eg = document.getElementById('evidence-grid');
+  eg.innerHTML = '';
+  c.evidence.forEach((e, i) => {
+    eg.innerHTML += `
+      <div class="evidence-item">
+        <div class="evidence-number">EV-${String(i+1).padStart(3,'0')}</div>
+        <div class="evidence-tag">${e.tag}</div>
+        <div class="evidence-desc">${e.description}</div>
+        <div style="margin-top:6px;font-size:11px;color:var(--red);font-style:italic;">${e.significance}</div>
+      </div>`;
+  });
+  document.getElementById('forensic-notes').textContent = c.forensicNotes;
+
+  // Suspects
+  renderSuspectGrid('suspect-grid', false);
+  renderSuspectGrid('solve-suspect-grid', true);
+
+  // Timeline
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  c.timeline.forEach(t => {
+    tl.innerHTML += `
+      <div class="timeline-item">
+        <div class="timeline-time">${t.time}</div>
+        <div class="timeline-event">${t.event}</div>
+      </div>`;
+  });
+  document.getElementById('investigator-notes').innerHTML = 
+    `<span class="annotation">${c.investigatorNotes}</span>`;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('dossier').style.display = 'block';
+  document.getElementById('new-case-btn').disabled = false;
+  switchTab('overview');
+}
+
+function renderSuspectGrid(containerId, selectable) {
+  const sg = document.getElementById(containerId);
+  sg.innerHTML = '';
+  caseData.suspects.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'suspect-card';
+    card.id = containerId + '-suspect-' + i;
+    card.innerHTML = `
+      ${selectable ? '<div class="suspect-select-indicator"></div>' : ''}
+      <div class="suspect-photo-area">${s.emoji}</div>
+      <div class="suspect-name">${s.name}</div>
+      <div class="suspect-role">${s.role}</div>
+      <div class="suspect-detail">${s.notes}<br><br><strong>Alibi:</strong> ${s.alibi}</div>
+      <div class="suspect-motive">Motive: ${s.motive}</div>`;
+    if (selectable) {
+      card.onclick = () => selectSuspect(i, containerId);
+    }
+    sg.appendChild(card);
+  });
+}
+
+function selectSuspect(idx, containerId) {
+  selectedSuspect = idx;
+  document.querySelectorAll('#' + containerId + ' .suspect-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === idx);
+  });
+}
+
+async function submitSolution() {
+  if (selectedSuspect === null) {
+    alert('Select a suspect first.');
+    return;
+  }
+  const theory = document.getElementById('theory-input').value.trim();
+  if (!theory) {
+    alert('State your theory before submitting.');
+    return;
+  }
+
+  const btn = document.getElementById('solve-btn');
+  btn.disabled = true;
+  btn.textContent = 'Analysing...';
+
+  const correct = selectedSuspect === caseData.solution.culpritIndex;
+  const suspect = caseData.suspects[selectedSuspect];
+  const solution = caseData.solution;
+
+  const verdictPrompt = `You are a cold case judge reviewing a detective's submitted theory.
+
+CASE: ${caseData.title}
+TRUE SOLUTION: ${solution.explanation}
+CULPRIT: ${caseData.suspects[solution.culpritIndex].name}
+
+DETECTIVE'S SUBMISSION:
+- Accused: ${suspect.name}
+- Theory: ${theory}
+- Correct suspect: ${correct ? 'YES' : 'NO'}
+
+Write a 2-3 sentence official verdict in the style of a classified government document. 
+${correct ? 'Confirm they solved it, acknowledge key correct reasoning.' : 'Inform them they are wrong, hint at what they missed without giving it all away. Be stern but professional.'}
+Do NOT start with "I" or "The detective". Start with the verdict status.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: verdictPrompt }]
+      })
+    });
+    const data = await res.json();
+    const verdictText = data.content[0].text;
+
+    const vbox = document.getElementById('verdict-box');
+    vbox.style.display = 'block';
+    vbox.className = correct ? 'verdict-box-correct' : 'verdict-box-wrong';
+    vbox.innerHTML = `
+      <div class="verdict-stamp ${correct ? 'verdict-correct' : 'verdict-wrong'}">
+        ${correct ? '✓ CASE CLOSED' : '✗ THEORY REJECTED'}
+      </div>
+      <div class="verdict-text">${verdictText}</div>
+      ${!correct ? `<div style="margin-top:12px;padding:10px;background:rgba(139,26,26,0.08);border-left:2px solid var(--red);font-size:12px;font-family:'Special Elite',cursive;color:var(--ink-faded);">The investigation remains open. Review your evidence and resubmit.</div>` : 
+      `<div style="margin-top:12px;padding:10px;background:rgba(26,92,26,0.08);border-left:2px solid var(--green-stamp);font-size:12px;font-family:'Special Elite',cursive;color:var(--ink-faded);">${solution.explanation}</div>`}`;
+
+  } catch(e) {
+    document.getElementById('verdict-box').style.display = 'block';
+    document.getElementById('verdict-box').innerHTML = '<div class="verdict-text">Error processing verdict. Try again.</div>';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Submit Case Theory';
+}
+</script>
+</body>
+</html>
